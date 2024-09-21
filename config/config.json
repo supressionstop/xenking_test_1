@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "processor",
+    "environment": "dev"
+  },
+  "log": {
+    "level": "debug"
+  },
+  "db": {
+    "url": "postgres://kiddy:kiddy_pwd@postgres:5432/kiddy_db?&application_name=softpro&sslmode=disable",
+    "migrations_url": "file:///migrations"
+  },
+  "workers": [
+    {
+      "sport": "baseball",
+      "poll_interval": "1s",
+      "provider": "kiddy"
+    },
+    {
+      "sport": "baseball",
+      "poll_interval": "5s",
+      "provider": "kiddy"
+    }
+  ],
+  "providers": {
+    "kiddy": {
+      "base_url": "http://kiddy-provider:8000/api",
+      "http_timeout": "1s"
+    }
+  },
+  "http_server": {
+    "address": ":80"
+  },
+  "grpc_server": {
+    "address": ":8080"
+  }
+}
