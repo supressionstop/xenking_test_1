@@ -1,0 +1,9 @@
+services:
+
+  lines-provider:
+    container_name: lines-provider
+    image: antonboom/lines-provider
+
+#  processor: # todo
+
+#  storage: # todo
