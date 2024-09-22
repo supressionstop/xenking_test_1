@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"xenking_test_1/internal/config"
 	internalLogger "xenking_test_1/internal/logger"
+	"xenking_test_1/internal/server"
 )
 
 func main() {
@@ -33,8 +34,9 @@ func run(ctx context.Context) error {
 	// storage
 	// workers
 
-	logger.Info("running")
+	server.NewHTTP(cfg, logger).Start(ctx)
 
+	logger.Info("running")
 	select {
 	case <-ctx.Done():
 		stop()
