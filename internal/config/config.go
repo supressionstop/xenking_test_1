@@ -10,8 +10,9 @@ import (
 
 type (
 	Config struct {
-		App `mapstructure:"app"`
-		Log `mapstructure:"log"`
+		App        App        `mapstructure:"app"`
+		Log        Log        `mapstructure:"log"`
+		HttpServer HttpServer `mapstructure:"http_server"`
 	}
 
 	App struct {
@@ -21,6 +22,11 @@ type (
 
 	Log struct {
 		Level string `mapstructure:"level"`
+	}
+
+	HttpServer struct {
+		Host string `mapstructure:"host"`
+		Port string `mapstructure:"port"`
 	}
 )
 
