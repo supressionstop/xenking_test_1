@@ -2,4 +2,4 @@
 GET http://localhost:8089/health
 
 ###
-GET http://localhost:8089/qwe
+GET http://localhost:8089/ready

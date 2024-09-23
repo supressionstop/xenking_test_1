@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type (
@@ -13,6 +14,9 @@ type (
 		App        App        `mapstructure:"app"`
 		Log        Log        `mapstructure:"log"`
 		HttpServer HttpServer `mapstructure:"http_server"`
+		DB         DB         `mapstructure:"db"`
+		Provider   Provider   `mapstructure:"provider"`
+		Workers    []Worker   `mapstructure:"workers"`
 	}
 
 	App struct {
@@ -27,6 +31,20 @@ type (
 	HttpServer struct {
 		Host string `mapstructure:"host"`
 		Port string `mapstructure:"port"`
+	}
+
+	DB struct {
+		URL string `mapstructure:"url"`
+	}
+
+	Provider struct {
+		BaseUrl     string        `mapstructure:"base_url" example:"http://localhost:8080"`
+		HttpTimeout time.Duration `mapstructure:"http_timeout" example:"5s"`
+	}
+
+	Worker struct {
+		Sport        string        `mapstructure:"sport"`
+		PollInterval time.Duration `mapstructure:"poll_interval"`
 	}
 )
 

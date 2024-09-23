@@ -7,26 +7,26 @@
     "level": "debug"
   },
   "db": {
-    "url": "postgres://kiddy:kiddy_pwd@postgres:5432/kiddy_db?&application_name=softpro&sslmode=disable",
+    "url": "postgres://kiddy:kiddy_pwd@localhost:55432/kiddy_db?&application_name=softpro&sslmode=disable",
     "migrations_url": "file:///migrations"
   },
   "workers": [
     {
       "sport": "baseball",
-      "poll_interval": "1s",
-      "provider": "kiddy"
+      "poll_interval": "1s"
     },
     {
-      "sport": "baseball",
-      "poll_interval": "5s",
-      "provider": "kiddy"
+      "sport": "football",
+      "poll_interval": "1s"
+    },
+    {
+      "sport": "soccer",
+      "poll_interval": "1s"
     }
   ],
-  "providers": {
-    "kiddy": {
-      "base_url": "http://kiddy-provider:8000/api",
-      "http_timeout": "1s"
-    }
+  "provider": {
+    "base_url": "http://localhost:58001/api",
+    "http_timeout": "1s"
   },
   "http_server": {
     "host": "127.0.0.1",

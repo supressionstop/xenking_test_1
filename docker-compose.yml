@@ -3,7 +3,23 @@ services:
   lines-provider:
     container_name: lines-provider
     image: antonboom/lines-provider
+    ports:
+      - "58001:8000"
 
 #  processor: # todo
 
-#  storage: # todo
+  storage:
+    container_name: storage
+    image: postgres:16.4-alpine3.20
+    ports:
+      - "55432:5432"
+    environment:
+      - POSTGRES_DB=kiddy_db
+      - POSTGRES_USER=kiddy
+      - POSTGRES_PASSWORD=kiddy_pwd
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pg-data:

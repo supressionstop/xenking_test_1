@@ -12,15 +12,17 @@ import (
 	"net"
 	"net/http"
 	"xenking_test_1/internal/config"
+	"xenking_test_1/internal/worker"
 )
 
 type Http struct {
 	cfg        *config.Config
 	logger     *slog.Logger
 	httpServer *http.Server
+	workerPool *worker.Pool
 }
 
-func NewHTTP(cfg *config.Config, logger *slog.Logger) *Http {
+func NewHTTP(cfg *config.Config, logger *slog.Logger, workerPool *worker.Pool) *Http {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	if cfg.App.Environment == "dev" {
@@ -29,7 +31,7 @@ func NewHTTP(cfg *config.Config, logger *slog.Logger) *Http {
 		r.Use(slogchi.New(logger))
 	}
 	r.Get("/health", healthHandler())
-	r.Get("/ready", readyHandler())
+	r.Get("/ready", readyHandler(workerPool))
 
 	httpServer := http.Server{
 		Addr:    net.JoinHostPort(cfg.HttpServer.Host, cfg.HttpServer.Port),
@@ -40,6 +42,7 @@ func NewHTTP(cfg *config.Config, logger *slog.Logger) *Http {
 		cfg:        cfg,
 		logger:     logger,
 		httpServer: &httpServer,
+		workerPool: workerPool,
 	}
 }
 
@@ -54,13 +57,14 @@ func (srv *Http) Start(ctx context.Context) {
 	srv.logger.Info("http server started", slog.String("addr", srv.httpServer.Addr))
 }
 
-func readyHandler() http.HandlerFunc {
+func readyHandler(workerPool *worker.Pool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("todo"))
-		if err != nil {
-			http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		synced := workerPool.IsSynced()
+		if synced {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusExpectationFailed)
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
