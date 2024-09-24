@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"xenking_test_1/internal/entity"
+	"github.com/supressionstop/xenking_test_1/internal/entity"
 )
 
 type SaveLineUseCase struct {

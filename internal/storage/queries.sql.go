@@ -11,6 +11,60 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getRecentBaseball = `-- name: GetRecentBaseball :one
+SELECT id, sport, rate, created_at
+FROM baseball
+WHERE id = (SELECT MAX(id) FROM baseball)
+`
+
+func (q *Queries) GetRecentBaseball(ctx context.Context) (Baseball, error) {
+	row := q.db.QueryRow(ctx, getRecentBaseball)
+	var i Baseball
+	err := row.Scan(
+		&i.ID,
+		&i.Sport,
+		&i.Rate,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getRecentFootball = `-- name: GetRecentFootball :one
+SELECT id, sport, rate, created_at
+FROM football
+WHERE id = (SELECT MAX(id) FROM football)
+`
+
+func (q *Queries) GetRecentFootball(ctx context.Context) (Football, error) {
+	row := q.db.QueryRow(ctx, getRecentFootball)
+	var i Football
+	err := row.Scan(
+		&i.ID,
+		&i.Sport,
+		&i.Rate,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getRecentSoccer = `-- name: GetRecentSoccer :one
+SELECT id, sport, rate, created_at
+FROM soccer
+WHERE id = (SELECT MAX(id) FROM soccer)
+`
+
+func (q *Queries) GetRecentSoccer(ctx context.Context) (Soccer, error) {
+	row := q.db.QueryRow(ctx, getRecentSoccer)
+	var i Soccer
+	err := row.Scan(
+		&i.ID,
+		&i.Sport,
+		&i.Rate,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const saveBaseball = `-- name: SaveBaseball :one
 INSERT INTO baseball (
     sport, rate, created_at

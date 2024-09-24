@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"xenking_test_1/internal/entity"
-	"xenking_test_1/internal/usecase/policy"
+	"github.com/supressionstop/xenking_test_1/internal/entity"
+	"github.com/supressionstop/xenking_test_1/internal/usecase/policy"
 )
 
 // GetLineUseCase gets line from provider

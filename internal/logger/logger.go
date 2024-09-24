@@ -1,9 +1,9 @@
 package logger
 
 import (
+	"github.com/supressionstop/xenking_test_1/internal/config"
 	"log/slog"
 	"os"
-	"xenking_test_1/internal/config"
 )
 
 func MustSetup(cfg config.Config) *slog.Logger {

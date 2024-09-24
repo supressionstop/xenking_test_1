@@ -7,12 +7,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	slogchi "github.com/samber/slog-chi"
+	"github.com/supressionstop/xenking_test_1/internal/config"
+	"github.com/supressionstop/xenking_test_1/internal/worker"
 	"log"
 	"log/slog"
 	"net"
 	"net/http"
-	"xenking_test_1/internal/config"
-	"xenking_test_1/internal/worker"
 )
 
 type Http struct {

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/supressionstop/xenking_test_1/internal/entity"
+	"github.com/supressionstop/xenking_test_1/internal/storage"
+	"github.com/supressionstop/xenking_test_1/internal/usecase/enum"
 	"time"
-	"xenking_test_1/internal/entity"
-	"xenking_test_1/internal/storage"
-	"xenking_test_1/internal/usecase/enum"
 )
 
 type Line struct {
@@ -36,6 +36,31 @@ func (repo *Line) Save(ctx context.Context, line entity.Line) (entity.Line, erro
 	result, err := repo.savedLineToEntity(sl)
 	if err != nil {
 		return entity.Line{}, fmt.Errorf("hydration: %w", err)
+	}
+
+	return result, nil
+}
+
+func (repo *Line) GetRecentLines(ctx context.Context, sports []enum.Sport) ([]entity.Line, error) {
+	tx, err := repo.pg.Pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("line.save begin tx: %w", err)
+	}
+	defer func() {
+		err = repo.finishTransaction(ctx, err, tx)
+	}()
+
+	lines, err := repo.getRecentLines(ctx, sports)
+	if err != nil {
+		return nil, fmt.Errorf("getting recent lines: %w", err)
+	}
+
+	result := make([]entity.Line, len(lines))
+	for i, line := range lines {
+		result[i], err = repo.savedLineToEntity(line)
+		if err != nil {
+			return nil, fmt.Errorf("hydration: %w", err)
+		}
 	}
 
 	return result, nil
@@ -117,4 +142,29 @@ func (repo *Line) savedLineToEntity(sl savedLine) (entity.Line, error) {
 	result.Coefficient = string(newRate)
 
 	return result, nil
+}
+
+func (repo *Line) getRecentLines(ctx context.Context, sports []enum.Sport) ([]savedLine, error) {
+	var errReturn error
+	result := make([]savedLine, len(sports))
+
+	for idx, sport := range sports {
+		if sport == enum.Baseball {
+			s, err := repo.pg.Queries.GetRecentBaseball(ctx)
+			result[idx] = savedLine(s)
+			errReturn = err
+		} else if sport == enum.Football {
+			s, err := repo.pg.Queries.GetRecentFootball(ctx)
+			result[idx] = savedLine(s)
+			errReturn = err
+		} else if sport == enum.Soccer {
+			s, err := repo.pg.Queries.GetRecentSoccer(ctx)
+			result[idx] = savedLine(s)
+			errReturn = err
+		} else {
+			return nil, fmt.Errorf("unknown sport")
+		}
+	}
+
+	return result, errReturn
 }

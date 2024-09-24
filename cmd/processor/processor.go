@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
+	"github.com/supressionstop/xenking_test_1/internal/config"
+	internalLogger "github.com/supressionstop/xenking_test_1/internal/logger"
+	"github.com/supressionstop/xenking_test_1/internal/provider"
+	"github.com/supressionstop/xenking_test_1/internal/server"
+	"github.com/supressionstop/xenking_test_1/internal/storage"
+	"github.com/supressionstop/xenking_test_1/internal/usecase"
+	"github.com/supressionstop/xenking_test_1/internal/usecase/repository"
+	"github.com/supressionstop/xenking_test_1/internal/worker"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"xenking_test_1/internal/config"
-	internalLogger "xenking_test_1/internal/logger"
-	"xenking_test_1/internal/provider"
-	"xenking_test_1/internal/server"
-	"xenking_test_1/internal/storage"
-	"xenking_test_1/internal/usecase"
-	"xenking_test_1/internal/usecase/repository"
-	"xenking_test_1/internal/worker"
 )
 
 func main() {
@@ -37,7 +37,6 @@ func run(ctx context.Context) error {
 	logger.Info("starting...")
 
 	// storage
-	// TODO: separate sports to tables
 	pg, err := storage.NewPostgres(ctx, cfg.DB.URL, logger)
 	if err != nil {
 		return err
@@ -60,6 +59,8 @@ func run(ctx context.Context) error {
 	getLine := usecase.NewGetLineUseCase(kiddy)
 	saveLine := usecase.NewSaveLineUseCase(lineRepository)
 	fetchLine := usecase.NewFetchLineUseCase(getLine, saveLine)
+	getRecentLines := usecase.NewGetRecentLinesUseCase(lineRepository)
+	calculateDiff := usecase.NewCalculateDiffUseCase()
 
 	// workers
 	workerPool := worker.NewPool(*cfg, logger, fetchLine)
@@ -68,9 +69,19 @@ func run(ctx context.Context) error {
 	// http server
 	server.NewHTTP(cfg, logger, workerPool).Start(ctx)
 
+	// grpc server
+	subscriptionManager := server.NewSubscriptionManager(getRecentLines, calculateDiff, logger)
+	grpcServer := server.NewGrpc(cfg.GrpcServer.Address, logger, subscriptionManager)
+	err = grpcServer.Start(ctx)
+	if err != nil {
+		return err
+	}
+
 	logger.Info("running")
 	select {
 	case <-ctx.Done():
+		logger.Debug("got sig")
+		//grpcServer.GracefulStop()
 		stop()
 		logger.Info("shutting down")
 	}

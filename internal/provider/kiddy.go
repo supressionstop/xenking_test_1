@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
-	"xenking_test_1/internal/usecase/dto"
 )
 
 type Kiddy struct {

@@ -20,3 +20,17 @@ INSERT INTO soccer (
          )
 RETURNING *;
 
+-- name: GetRecentBaseball :one
+SELECT *
+FROM baseball
+WHERE id = (SELECT MAX(id) FROM baseball);
+
+-- name: GetRecentFootball :one
+SELECT *
+FROM football
+WHERE id = (SELECT MAX(id) FROM football);
+
+-- name: GetRecentSoccer :one
+SELECT *
+FROM soccer
+WHERE id = (SELECT MAX(id) FROM soccer);

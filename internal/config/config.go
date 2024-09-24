@@ -17,6 +17,7 @@ type (
 		DB         DB         `mapstructure:"db"`
 		Provider   Provider   `mapstructure:"provider"`
 		Workers    []Worker   `mapstructure:"workers"`
+		GrpcServer `mapstructure:"grpc_server"`
 	}
 
 	App struct {
@@ -45,6 +46,10 @@ type (
 	Worker struct {
 		Sport        string        `mapstructure:"sport"`
 		PollInterval time.Duration `mapstructure:"poll_interval"`
+	}
+
+	GrpcServer struct {
+		Address string `mapstructure:"address" example:":8080"`
 	}
 )
 

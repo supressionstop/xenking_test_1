@@ -3,10 +3,10 @@ package worker
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/supressionstop/xenking_test_1/internal/usecase"
 	"log/slog"
 	"sync"
 	"time"
-	"xenking_test_1/internal/usecase"
 )
 
 type Worker struct {

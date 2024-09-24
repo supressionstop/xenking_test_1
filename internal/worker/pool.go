@@ -2,9 +2,9 @@ package worker
 
 import (
 	"context"
+	"github.com/supressionstop/xenking_test_1/internal/config"
+	"github.com/supressionstop/xenking_test_1/internal/usecase"
 	"log/slog"
-	"xenking_test_1/internal/config"
-	"xenking_test_1/internal/usecase"
 )
 
 type Pool struct {
