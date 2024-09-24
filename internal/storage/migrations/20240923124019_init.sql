@@ -1,6 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE lines (
+CREATE TABLE baseball (
+    id SERIAL PRIMARY KEY,
+    sport TEXT NOT NULL,
+    rate  DECIMAL NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
+CREATE TABLE football (
+    id SERIAL PRIMARY KEY,
+    sport TEXT NOT NULL,
+    rate  DECIMAL NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
+CREATE TABLE soccer (
     id SERIAL PRIMARY KEY,
     sport TEXT NOT NULL,
     rate  DECIMAL NOT NULL,
@@ -10,5 +22,7 @@ CREATE TABLE lines (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE lines;
+DROP TABLE baseball;
+DROP TABLE football;
+DROP TABLE soccer;
 -- +goose StatementEnd

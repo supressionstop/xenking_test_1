@@ -8,6 +8,7 @@ import (
 	"time"
 	"xenking_test_1/internal/entity"
 	"xenking_test_1/internal/storage"
+	"xenking_test_1/internal/usecase/enum"
 )
 
 type Line struct {
@@ -27,29 +28,15 @@ func (repo *Line) Save(ctx context.Context, line entity.Line) (entity.Line, erro
 		err = repo.finishTransaction(ctx, err, tx)
 	}()
 
-	rate := pgtype.Numeric{}
-	if err := rate.Scan(line.Coefficient); err != nil {
-		return entity.Line{}, fmt.Errorf("string to numeric: %w", err)
-	}
-	savedLine, err := repo.pg.Queries.SaveLine(ctx, storage.SaveLineParams{
-		Sport:     line.Name,
-		Rate:      rate,
-		CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
-	})
+	sl, err := repo.saveLine(ctx, line)
 	if err != nil {
-		return entity.Line{}, fmt.Errorf("SaveLine: %w", err)
+		return entity.Line{}, fmt.Errorf("saving line: %w", err)
 	}
 
-	result := entity.Line{
-		Id:      int64(savedLine.ID),
-		Name:    savedLine.Sport,
-		SavedAt: time.Time{},
-	}
-	newRate, err := savedLine.Rate.MarshalJSON()
+	result, err := repo.savedLineToEntity(sl)
 	if err != nil {
-		return entity.Line{}, fmt.Errorf("rate to string: %w", err)
+		return entity.Line{}, fmt.Errorf("hydration: %w", err)
 	}
-	result.Coefficient = string(newRate)
 
 	return result, nil
 }
@@ -68,4 +55,66 @@ func (repo *Line) finishTransaction(ctx context.Context, err error, tx pgx.Tx) e
 
 		return nil
 	}
+}
+
+type savedLine struct {
+	ID        int32
+	Sport     string
+	Rate      pgtype.Numeric
+	CreatedAt pgtype.Timestamp
+}
+
+func (repo *Line) saveLine(ctx context.Context, line entity.Line) (savedLine, error) {
+	var sl savedLine
+	var errReturn error
+
+	rate := pgtype.Numeric{}
+	if err := rate.Scan(line.Coefficient); err != nil {
+		return sl, fmt.Errorf("string to numeric: %w", err)
+	}
+
+	if line.Name == enum.Baseball {
+		s, err := repo.pg.Queries.SaveBaseball(ctx, storage.SaveBaseballParams{
+			Sport:     line.Name,
+			Rate:      rate,
+			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		})
+		sl = savedLine(s)
+		errReturn = err
+	} else if line.Name == enum.Football {
+		s, err := repo.pg.Queries.SaveFootball(ctx, storage.SaveFootballParams{
+			Sport:     line.Name,
+			Rate:      rate,
+			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		})
+		sl = savedLine(s)
+		errReturn = err
+	} else if line.Name == enum.Soccer {
+		s, err := repo.pg.Queries.SaveSoccer(ctx, storage.SaveSoccerParams{
+			Sport:     line.Name,
+			Rate:      rate,
+			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		})
+		sl = savedLine(s)
+		errReturn = err
+	} else {
+		return sl, fmt.Errorf("unknown line")
+	}
+
+	return sl, errReturn
+}
+
+func (repo *Line) savedLineToEntity(sl savedLine) (entity.Line, error) {
+	result := entity.Line{
+		Id:      int64(sl.ID),
+		Name:    sl.Sport,
+		SavedAt: time.Time{},
+	}
+	newRate, err := sl.Rate.MarshalJSON()
+	if err != nil {
+		return entity.Line{}, fmt.Errorf("rate to string: %w", err)
+	}
+	result.Coefficient = string(newRate)
+
+	return result, nil
 }

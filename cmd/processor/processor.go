@@ -62,7 +62,8 @@ func run(ctx context.Context) error {
 	fetchLine := usecase.NewFetchLineUseCase(getLine, saveLine)
 
 	// workers
-	worker.NewPool(*cfg, logger, fetchLine).StartWorkers(ctx)
+	workerPool := worker.NewPool(*cfg, logger, fetchLine)
+	workerPool.StartWorkers(ctx)
 
 	// http server
 	server.NewHTTP(cfg, logger, workerPool).Start(ctx)

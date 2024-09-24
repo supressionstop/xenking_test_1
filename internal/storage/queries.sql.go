@@ -11,8 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const saveLine = `-- name: SaveLine :one
-INSERT INTO lines (
+const saveBaseball = `-- name: SaveBaseball :one
+INSERT INTO baseball (
     sport, rate, created_at
 ) VALUES (
              $1, $2, $3
@@ -20,15 +20,69 @@ INSERT INTO lines (
 RETURNING id, sport, rate, created_at
 `
 
-type SaveLineParams struct {
+type SaveBaseballParams struct {
 	Sport     string
 	Rate      pgtype.Numeric
 	CreatedAt pgtype.Timestamp
 }
 
-func (q *Queries) SaveLine(ctx context.Context, arg SaveLineParams) (Line, error) {
-	row := q.db.QueryRow(ctx, saveLine, arg.Sport, arg.Rate, arg.CreatedAt)
-	var i Line
+func (q *Queries) SaveBaseball(ctx context.Context, arg SaveBaseballParams) (Baseball, error) {
+	row := q.db.QueryRow(ctx, saveBaseball, arg.Sport, arg.Rate, arg.CreatedAt)
+	var i Baseball
+	err := row.Scan(
+		&i.ID,
+		&i.Sport,
+		&i.Rate,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const saveFootball = `-- name: SaveFootball :one
+INSERT INTO football (
+    sport, rate, created_at
+) VALUES (
+             $1, $2, $3
+         )
+RETURNING id, sport, rate, created_at
+`
+
+type SaveFootballParams struct {
+	Sport     string
+	Rate      pgtype.Numeric
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) SaveFootball(ctx context.Context, arg SaveFootballParams) (Football, error) {
+	row := q.db.QueryRow(ctx, saveFootball, arg.Sport, arg.Rate, arg.CreatedAt)
+	var i Football
+	err := row.Scan(
+		&i.ID,
+		&i.Sport,
+		&i.Rate,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const saveSoccer = `-- name: SaveSoccer :one
+INSERT INTO soccer (
+    sport, rate, created_at
+) VALUES (
+             $1, $2, $3
+         )
+RETURNING id, sport, rate, created_at
+`
+
+type SaveSoccerParams struct {
+	Sport     string
+	Rate      pgtype.Numeric
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) SaveSoccer(ctx context.Context, arg SaveSoccerParams) (Soccer, error) {
+	row := q.db.QueryRow(ctx, saveSoccer, arg.Sport, arg.Rate, arg.CreatedAt)
+	var i Soccer
 	err := row.Scan(
 		&i.ID,
 		&i.Sport,
