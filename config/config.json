@@ -7,7 +7,7 @@
     "level": "debug"
   },
   "db": {
-    "url": "postgres://kiddy:kiddy_pwd@localhost:55432/kiddy_db?&application_name=softpro&sslmode=disable",
+    "url": "postgres://kiddy:kiddy_pwd@storage:5432/kiddy_db?&application_name=softpro&sslmode=disable",
     "migrations_url": "file:///migrations"
   },
   "workers": [
@@ -25,7 +25,7 @@
     }
   ],
   "provider": {
-    "base_url": "http://localhost:58001/api",
+    "base_url": "http://lines-provider:8000/api",
     "http_timeout": "1s"
   },
   "http_server": {
@@ -33,6 +33,7 @@
     "port": "8089"
   },
   "grpc_server": {
-    "address": ":8080"
+    "host": "127.0.0.1",
+    "port": "8080"
   }
 }

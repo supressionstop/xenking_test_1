@@ -8,18 +8,22 @@ import (
 )
 
 type Pool struct {
-	workers []*Worker
-	logger  *slog.Logger
+	workers        []*Worker
+	logger         *slog.Logger
+	FirstSyncChan  chan struct{}
+	workerSyncChan chan struct{}
 }
 
 func NewPool(cfg config.Config, logger *slog.Logger, fetchLine usecase.FetchLine) *Pool {
 	pool := &Pool{
-		logger:  logger,
-		workers: make([]*Worker, len(cfg.Workers)),
+		logger:         logger,
+		workers:        make([]*Worker, len(cfg.Workers)),
+		FirstSyncChan:  make(chan struct{}),
+		workerSyncChan: make(chan struct{}, len(cfg.Workers)),
 	}
 
 	for idx, wc := range cfg.Workers {
-		worker := NewWorker(wc.Sport, wc.PollInterval, logger, fetchLine)
+		worker := NewWorker(wc.Sport, wc.PollInterval, logger, fetchLine, pool.workerSyncChan)
 		pool.workers[idx] = worker
 	}
 
@@ -30,6 +34,8 @@ func (p *Pool) StartWorkers(ctx context.Context) {
 	for _, worker := range p.workers {
 		worker.Start(ctx)
 	}
+
+	p.waitSynchronization(ctx)
 }
 
 func (p *Pool) IsSynced() bool {
@@ -40,4 +46,23 @@ func (p *Pool) IsSynced() bool {
 	}
 
 	return true
+}
+
+func (p *Pool) waitSynchronization(ctx context.Context) {
+	go func() {
+		leftToSync := len(p.workers)
+		for {
+			select {
+			case <-p.workerSyncChan:
+				leftToSync--
+				if leftToSync == 0 {
+					p.FirstSyncChan <- struct{}{}
+					close(p.FirstSyncChan)
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 }

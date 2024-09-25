@@ -18,15 +18,23 @@ type Worker struct {
 	isFirstTimeSynced bool
 	logger            *slog.Logger
 	mu                sync.RWMutex
+	workerSyncChan    chan struct{}
 }
 
-func NewWorker(sport string, interval time.Duration, logger *slog.Logger, fetchLine usecase.FetchLine) *Worker {
+func NewWorker(
+	sport string,
+	interval time.Duration,
+	logger *slog.Logger,
+	fetchLine usecase.FetchLine,
+	workerSyncChan chan struct{},
+) *Worker {
 	return &Worker{
-		id:        uuid.New().String(),
-		fetchLine: fetchLine,
-		sport:     sport,
-		interval:  interval,
-		logger:    logger,
+		id:             uuid.New().String(),
+		fetchLine:      fetchLine,
+		sport:          sport,
+		interval:       interval,
+		logger:         logger,
+		workerSyncChan: workerSyncChan,
 	}
 }
 
@@ -41,7 +49,7 @@ func (w *Worker) Start(ctx context.Context) {
 				err := w.fetchLine.Execute(ctx, w.sport)
 				if err != nil {
 					w.errCh <- err
-				}
+				} // TODO: handle errors
 				w.setSynced()
 				w.logger.Debug("line fetched", slog.String("id", w.id), slog.String("sport", w.sport))
 			case <-ctx.Done():
@@ -66,4 +74,5 @@ func (w *Worker) setSynced() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.isFirstTimeSynced = true
+	w.workerSyncChan <- struct{}{}
 }

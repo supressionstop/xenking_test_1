@@ -6,7 +6,14 @@ services:
     ports:
       - "58001:8000"
 
-#  processor: # todo
+  processor:
+    build:
+      context: ./
+      dockerfile: docker/processor/Dockerfile
+    restart: always
+    depends_on:
+      - lines-provider
+      - storage
 
   storage:
     container_name: storage

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/supressionstop/xenking_test_1/internal/config"
 	internalLogger "github.com/supressionstop/xenking_test_1/internal/logger"
 	"github.com/supressionstop/xenking_test_1/internal/provider"
@@ -11,6 +12,7 @@ import (
 	"github.com/supressionstop/xenking_test_1/internal/usecase/repository"
 	"github.com/supressionstop/xenking_test_1/internal/worker"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -67,24 +69,41 @@ func run(ctx context.Context) error {
 	workerPool.StartWorkers(ctx)
 
 	// http server
-	server.NewHTTP(cfg, logger, workerPool).Start(ctx)
+	httpServer := server.NewHttp(cfg, logger, workerPool)
+	httpServer.Start()
 
 	// grpc server
 	subscriptionManager := server.NewSubscriptionManager(getRecentLines, calculateDiff, logger)
-	grpcServer := server.NewGrpc(cfg.GrpcServer.Address, logger, subscriptionManager)
-	err = grpcServer.Start(ctx)
+	grpcServer := server.NewGrpc(
+		fmt.Sprintf("%s:%s", cfg.GrpcServer.Host, cfg.GrpcServer.Port),
+		logger,
+		subscriptionManager,
+	)
+	err = grpcServer.DeferredStart(workerPool.FirstSyncChan)
 	if err != nil {
 		return err
 	}
 
 	logger.Info("running")
 	select {
+	case err := <-httpServer.ErrChan:
+		if err != nil {
+			logger.Error("http server error", slog.Any("err", err))
+		}
+		ctx.Done()
+	case err := <-grpcServer.ErrChan:
+		if err != nil {
+			logger.Error("grpc server error", slog.Any("err", err))
+		}
+		ctx.Done()
 	case <-ctx.Done():
-		logger.Debug("got sig")
-		//grpcServer.GracefulStop()
+		grpcServer.GracefulStop()
+		err := httpServer.Shutdown(ctx)
+		if err != nil {
+			logger.Error("failed to shutdown http server", slog.Any("err", err))
+		}
 		stop()
-		logger.Info("shutting down")
 	}
-
+	logger.Info("app finished.")
 	return nil
 }

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"github.com/supressionstop/xenking_test_1/internal/server/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,6 +20,7 @@ type Grpc struct {
 	subscriptionManager *SubscriptionManager
 	linesDataChan       chan *pb.LinesData
 	pb.UnimplementedLinesServer
+	ErrChan chan error
 }
 
 func NewGrpc(addr string, logger *slog.Logger, subscriptionManager *SubscriptionManager) *Grpc {
@@ -30,20 +30,20 @@ func NewGrpc(addr string, logger *slog.Logger, subscriptionManager *Subscription
 		logger:              logger,
 		subscriptionManager: subscriptionManager,
 		grpcServer:          grpcServer,
+		ErrChan:             make(chan error),
 	}
 	pb.RegisterLinesServer(grpcServer, srv)
 	return srv
 }
 
-func (srv *Grpc) Start(ctx context.Context) error {
+func (srv *Grpc) Start() error {
 	listener, err := net.Listen("tcp", srv.addr)
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		srv.grpcServer.Serve(listener)
-		// TODO: context
+		srv.ErrChan <- srv.grpcServer.Serve(listener)
 	}()
 
 	srv.logger.Info("grpc server started", slog.String("addr", srv.addr))
@@ -51,8 +51,14 @@ func (srv *Grpc) Start(ctx context.Context) error {
 	return nil
 }
 
+func (srv *Grpc) DeferredStart(toStart chan struct{}) error {
+	<-toStart
+	return srv.Start()
+}
+
 func (srv *Grpc) GracefulStop() {
 	srv.grpcServer.GracefulStop()
+	srv.logger.Info("grpc server stopped")
 }
 
 func (srv *Grpc) SubscribeOnSportsLines(stream pb.Lines_SubscribeOnSportsLinesServer) error {

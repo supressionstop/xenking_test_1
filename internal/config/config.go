@@ -17,7 +17,7 @@ type (
 		DB         DB         `mapstructure:"db"`
 		Provider   Provider   `mapstructure:"provider"`
 		Workers    []Worker   `mapstructure:"workers"`
-		GrpcServer `mapstructure:"grpc_server"`
+		GrpcServer GrpcServer `mapstructure:"grpc_server"`
 	}
 
 	App struct {
@@ -49,7 +49,8 @@ type (
 	}
 
 	GrpcServer struct {
-		Address string `mapstructure:"address" example:":8080"`
+		Host string `mapstructure:"host"`
+		Port string `mapstructure:"port"`
 	}
 )
 
@@ -84,12 +85,5 @@ func MustSetup(environment string) (*Config, error) {
 		return nil, err
 	}
 
-	//appRootPath := filepath.Join(b, "../..")
-	//setPathsFromRoot(appRootPath, cfg)
-
 	return cfg, nil
-}
-
-func setPathsFromRoot(projectRoot string, config *Config) {
-	// TODO: migrations
 }
