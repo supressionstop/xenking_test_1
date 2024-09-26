@@ -79,13 +79,13 @@ func (repo *Line) GetRecentLines(ctx context.Context, sports []enum.Sport) ([]en
 func (repo *Line) finishTransaction(ctx context.Context, err error, tx pgx.Tx) error {
 	if err != nil {
 		if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-			return fmt.Errorf("%s: %s", rollbackErr, err)
+			return fmt.Errorf("failed to rollback: %w", rollbackErr)
 		}
 
 		return err
 	} else {
 		if commitErr := tx.Commit(ctx); commitErr != nil {
-			return fmt.Errorf("failed to commit tx: %s", err)
+			return fmt.Errorf("failed to commit tx: %w", err)
 		}
 
 		return nil

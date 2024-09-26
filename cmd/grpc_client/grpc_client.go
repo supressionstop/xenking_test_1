@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/supressionstop/xenking_test_1/internal/server/pb"
@@ -43,8 +44,9 @@ func main() {
 
 	go func() {
 		for {
+			// (google.golang.org/grpc/BidiStreamingClient.Recv
 			in, err := stream.Recv()
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return
 			}
 			if err != nil {
@@ -59,7 +61,8 @@ func main() {
 	fmt.Println("---------------------")
 	for {
 		fmt.Print("$ ")
-		input, _ := reader.ReadString('\n')
+		input, err := reader.ReadString('\n')
+		fmt.Println(err)
 		// convert CRLF to LF
 		input = strings.Replace(input, "\n", "", -1)
 

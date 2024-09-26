@@ -4,7 +4,7 @@ lint:
 
 .PHONY: tests
 tests:
-	go test ./...
+	go test ./internal/...
 
 .PHONY: run
 run:

@@ -68,7 +68,7 @@ func (p *Pool) waitSynchronization(ctx context.Context) {
 					return
 				}
 			case err := <-p.workersErrChan:
-				p.logger.Error("worker err:", err)
+				p.logger.Error("worker err:", slog.Any("err", err))
 				log.Fatal(err)
 			case <-ctx.Done():
 				return

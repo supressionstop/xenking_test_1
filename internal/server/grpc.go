@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"io"
 	"log/slog"
 	"net"
@@ -72,7 +73,7 @@ func (srv *Grpc) SubscribeOnSportsLines(stream pb.Lines_SubscribeOnSportsLinesSe
 
 		subscriptionRequest, err := stream.Recv()
 		s, _ := status.FromError(err)
-		if err == io.EOF || s.Code() == codes.Canceled {
+		if errors.Is(err, io.EOF) || s.Code() == codes.Canceled {
 			srv.logger.Info(
 				"grpc client disconnected",
 				slog.String("client_addr", string(client)),
