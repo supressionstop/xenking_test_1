@@ -2,13 +2,12 @@ package usecase
 
 import "context"
 
-// FetchLineUseCase gets line from line provider and saves to storage
 type FetchLineUseCase struct {
-	getLine  GetLine
-	saveLine SaveLine
+	getLine  GetLineFromProvider
+	saveLine SaveLineToStorage
 }
 
-func NewFetchLineUseCase(getLine GetLine, saveLine SaveLine) *FetchLineUseCase {
+func NewFetchLineUseCase(getLine GetLineFromProvider, saveLine SaveLineToStorage) *FetchLineUseCase {
 	return &FetchLineUseCase{
 		getLine:  getLine,
 		saveLine: saveLine,

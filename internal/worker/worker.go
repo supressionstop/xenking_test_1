@@ -2,11 +2,12 @@ package worker
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/supressionstop/xenking_test_1/internal/usecase"
 	"log/slog"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/supressionstop/xenking_test_1/internal/usecase"
 )
 
 type Worker struct {
@@ -14,7 +15,7 @@ type Worker struct {
 	sport             string
 	id                string
 	interval          time.Duration
-	errCh             chan error
+	ErrCh             chan error
 	isFirstTimeSynced bool
 	logger            *slog.Logger
 	mu                sync.RWMutex
@@ -27,14 +28,18 @@ func NewWorker(
 	logger *slog.Logger,
 	fetchLine usecase.FetchLine,
 	workerSyncChan chan struct{},
+	errCh chan error,
 ) *Worker {
 	return &Worker{
-		id:             uuid.New().String(),
-		fetchLine:      fetchLine,
-		sport:          sport,
-		interval:       interval,
-		logger:         logger,
-		workerSyncChan: workerSyncChan,
+		id:                uuid.New().String(),
+		fetchLine:         fetchLine,
+		sport:             sport,
+		interval:          interval,
+		logger:            logger,
+		workerSyncChan:    workerSyncChan,
+		ErrCh:             errCh,
+		isFirstTimeSynced: false,
+		mu:                sync.RWMutex{},
 	}
 }
 
@@ -43,13 +48,15 @@ func (w *Worker) Start(ctx context.Context) {
 
 	go func() {
 		defer ticker.Stop()
+
 		for {
 			select {
 			case <-ticker.C:
 				err := w.fetchLine.Execute(ctx, w.sport)
 				if err != nil {
-					w.errCh <- err
+					w.ErrCh <- err
 				} // TODO: handle errors
+
 				w.setSynced()
 				w.logger.Debug("line fetched", slog.String("id", w.id), slog.String("sport", w.sport))
 			case <-ctx.Done():
@@ -64,6 +71,7 @@ func (w *Worker) Start(ctx context.Context) {
 func (w *Worker) Synced() bool {
 	w.mu.RLock()
 	defer w.mu.RUnlock()
+
 	return w.isFirstTimeSynced
 }
 
@@ -71,6 +79,7 @@ func (w *Worker) setSynced() {
 	if w.isFirstTimeSynced {
 		return
 	}
+
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	w.isFirstTimeSynced = true

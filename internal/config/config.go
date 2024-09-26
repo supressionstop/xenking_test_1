@@ -2,22 +2,23 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type (
 	Config struct {
 		App        App        `mapstructure:"app"`
 		Log        Log        `mapstructure:"log"`
-		HttpServer HttpServer `mapstructure:"http_server"`
+		HTTPServer HTTPServer `mapstructure:"http_server"`
 		DB         DB         `mapstructure:"db"`
 		Provider   Provider   `mapstructure:"provider"`
 		Workers    []Worker   `mapstructure:"workers"`
-		GrpcServer GrpcServer `mapstructure:"grpc_server"`
+		GRPCServer GrpcServer `mapstructure:"grpc_server"`
 	}
 
 	App struct {
@@ -29,7 +30,7 @@ type (
 		Level string `mapstructure:"level"`
 	}
 
-	HttpServer struct {
+	HTTPServer struct {
 		Host string `mapstructure:"host"`
 		Port string `mapstructure:"port"`
 	}
@@ -39,8 +40,8 @@ type (
 	}
 
 	Provider struct {
-		BaseUrl     string        `mapstructure:"base_url" example:"http://localhost:8080"`
-		HttpTimeout time.Duration `mapstructure:"http_timeout" example:"5s"`
+		BaseURL     string        `example:"http://localhost:8080" mapstructure:"base_url"`
+		HTTPTimeout time.Duration `example:"5s"                    mapstructure:"http_timeout"`
 	}
 
 	Worker struct {
@@ -65,12 +66,14 @@ func MustSetup(environment string) (*Config, error) {
 	} else {
 		viper.SetConfigName(fmt.Sprintf("config_%s", strings.ToLower(environment)))
 	}
+
 	viper.SetConfigType("json")
 
 	configFolderPath, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
+
 	configFolderPath = filepath.Join(configFolderPath, "config")
 	viper.AddConfigPath(configFolderPath)
 
@@ -79,7 +82,8 @@ func MustSetup(environment string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg := &Config{}
+	cfg := &Config{} //nolint:exhaustruct
+
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		return nil, err

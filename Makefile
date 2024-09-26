@@ -1,20 +1,20 @@
 .PHONY: lint
 lint:
-	echo "todo linters"
+	golangci-lint run --config ./config/golangci.yml
 
 .PHONY: tests
 tests:
-	echo "todo tests"
+	go test ./...
 
 .PHONY: run
 run:
-	echo "todo run"
+	docker compose up -d --build
 
 .PHONY: stop
 stop:
-	echo "todo stop"
+	docker compose stop
 
-### helpers
+# helpers
 
 .PHONY: proto
 proto:
@@ -22,3 +22,11 @@ proto:
 			--go_out=. \
 			--go-grpc_out=. \
 			lines.proto
+
+.PHONY: mock
+mock:
+	mockery --config ./config/mockery.yml
+
+.PHONY: debug-run
+debug-run:
+	docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build

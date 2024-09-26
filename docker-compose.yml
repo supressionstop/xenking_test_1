@@ -4,7 +4,7 @@ services:
     container_name: lines-provider
     image: antonboom/lines-provider
     ports:
-      - "58001:8000"
+      - "48000:8000"
 
   processor:
     build:
@@ -14,6 +14,9 @@ services:
     depends_on:
       - lines-provider
       - storage
+    ports:
+      - "48001:8081"
+      - "48002:8082"
 
   storage:
     container_name: storage

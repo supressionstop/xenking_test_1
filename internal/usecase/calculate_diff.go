@@ -5,8 +5,7 @@ import (
 	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
 )
 
-type CalculateDiffUseCase struct {
-}
+type CalculateDiffUseCase struct{}
 
 func NewCalculateDiffUseCase() *CalculateDiffUseCase {
 	return &CalculateDiffUseCase{}
@@ -40,7 +39,7 @@ func (uc *CalculateDiffUseCase) diff(prev, curr dto.LineMap) (dto.LinesDiff, err
 		if err != nil {
 			return nil, err
 		}
-		diff[sport] = prevRate.Sub(currRate).String()
+		diff[sport] = currRate.Sub(prevRate).String()
 	}
 	return diff, nil
 }

@@ -1,14 +1,15 @@
 package server
 
 import (
+	"io"
+	"log/slog"
+	"net"
+
 	"github.com/supressionstop/xenking_test_1/internal/server/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
-	"io"
-	"log/slog"
-	"net"
 )
 
 type Client string
@@ -18,7 +19,6 @@ type Grpc struct {
 	grpcServer          *grpc.Server
 	logger              *slog.Logger
 	subscriptionManager *SubscriptionManager
-	linesDataChan       chan *pb.LinesData
 	pb.UnimplementedLinesServer
 	ErrChan chan error
 }
@@ -33,6 +33,7 @@ func NewGrpc(addr string, logger *slog.Logger, subscriptionManager *Subscription
 		ErrChan:             make(chan error),
 	}
 	pb.RegisterLinesServer(grpcServer, srv)
+
 	return srv
 }
 
@@ -46,12 +47,13 @@ func (srv *Grpc) Start() error {
 		srv.ErrChan <- srv.grpcServer.Serve(listener)
 	}()
 
-	srv.logger.Info("grpc server started", slog.String("addr", srv.addr))
+	srv.logger.Info("grpc server starting...", slog.String("addr", srv.addr))
 
 	return nil
 }
 
 func (srv *Grpc) DeferredStart(toStart chan struct{}) error {
+	srv.logger.Info("grpc server is waiting to start", slog.String("addr", srv.addr))
 	<-toStart
 	return srv.Start()
 }

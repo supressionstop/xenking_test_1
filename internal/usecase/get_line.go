@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
+
 	"github.com/supressionstop/xenking_test_1/internal/entity"
 	"github.com/supressionstop/xenking_test_1/internal/usecase/policy"
 )
 
-// GetLineUseCase gets line from provider
 type GetLineUseCase struct {
 	provider LineProvider
 }

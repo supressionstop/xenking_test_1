@@ -3,12 +3,13 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/supressionstop/xenking_test_1/internal/entity"
 	"github.com/supressionstop/xenking_test_1/internal/storage"
 	"github.com/supressionstop/xenking_test_1/internal/usecase/enum"
-	"time"
 )
 
 type Line struct {
@@ -20,10 +21,19 @@ func NewLine(pg *storage.Postgres) *Line {
 }
 
 func (repo *Line) Save(ctx context.Context, line entity.Line) (entity.Line, error) {
-	tx, err := repo.pg.Pool.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := repo.pg.Pool.BeginTx(
+		ctx,
+		pgx.TxOptions{
+			IsoLevel:       "",
+			AccessMode:     "",
+			DeferrableMode: "",
+			BeginQuery:     "",
+		},
+	)
 	if err != nil {
 		return entity.Line{}, fmt.Errorf("line.save begin tx: %w", err)
 	}
+
 	defer func() {
 		err = repo.finishTransaction(ctx, err, tx)
 	}()
@@ -131,7 +141,7 @@ func (repo *Line) saveLine(ctx context.Context, line entity.Line) (savedLine, er
 
 func (repo *Line) savedLineToEntity(sl savedLine) (entity.Line, error) {
 	result := entity.Line{
-		Id:      int64(sl.ID),
+		ID:      int64(sl.ID),
 		Name:    sl.Sport,
 		SavedAt: time.Time{},
 	}
@@ -146,6 +156,7 @@ func (repo *Line) savedLineToEntity(sl savedLine) (entity.Line, error) {
 
 func (repo *Line) getRecentLines(ctx context.Context, sports []enum.Sport) ([]savedLine, error) {
 	var errReturn error
+
 	result := make([]savedLine, len(sports))
 
 	for idx, sport := range sports {

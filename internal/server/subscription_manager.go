@@ -57,7 +57,6 @@ func (m *SubscriptionManager) CancelSubscription(c Client) {
 	}
 	sub.stopChan <- struct{}{}
 	delete(m.clients, c)
-
 }
 
 type Subscription struct {
@@ -81,8 +80,8 @@ func NewSubscription(
 ) *Subscription {
 	return &Subscription{
 		client:         client,
-		sports:         req.Sports,
-		ticker:         time.NewTicker(time.Duration(req.Interval) * time.Second),
+		sports:         req.GetSports(),
+		ticker:         time.NewTicker(time.Duration(req.GetInterval()) * time.Second),
 		getRecentLines: getRecentLines,
 		calculateDiff:  calculateDiff,
 		logger:         logger,
@@ -127,8 +126,8 @@ func (s *Subscription) Activate(ctx context.Context, stream pb.Lines_SubscribeOn
 func (s *Subscription) Update(req *pb.Subscribe) {
 	s.rwmutex.Lock()
 	defer s.rwmutex.Unlock()
-	s.ticker.Reset(time.Duration(req.Interval) * time.Second)
-	s.sports = req.Sports
+	s.ticker.Reset(time.Duration(req.GetInterval()) * time.Second)
+	s.sports = req.GetSports()
 	s.prev = nil
 }
 

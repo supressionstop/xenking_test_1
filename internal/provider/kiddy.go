@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
 )
 
 type Kiddy struct {
@@ -84,7 +85,7 @@ type Line struct {
 	Rate  string
 }
 
-// UnmarshalJSON {"SPORT": "0.123"}
+// UnmarshalJSON {"SPORT": "0.123"}.
 func (l *Line) UnmarshalJSON(data []byte) error {
 	var v map[string]string
 	if err := json.Unmarshal(data, &v); err != nil {

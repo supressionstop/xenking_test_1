@@ -1,0 +1,21 @@
+run:
+  concurrency: 4
+  timeout: 10s
+  tests: true
+  allow-parallel-runners: true
+  go: '1.23'
+output:
+  sort-results: true
+  sort-order:
+    - file
+    - linter
+    - severity
+  show-stats: true
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused

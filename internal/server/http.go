@@ -2,14 +2,15 @@ package server
 
 import (
 	"context"
+	slogchi "github.com/samber/slog-chi"
+	"log"
+	"log/slog"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	slogchi "github.com/samber/slog-chi"
 	"github.com/supressionstop/xenking_test_1/internal/config"
 	"github.com/supressionstop/xenking_test_1/internal/worker"
-	"log/slog"
-	"net"
-	"net/http"
 )
 
 type Http struct {
@@ -23,31 +24,30 @@ type Http struct {
 func NewHttp(cfg *config.Config, logger *slog.Logger, workerPool *worker.Pool) *Http {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
-	if cfg.App.Environment == "dev" {
-		r.Use(middleware.Logger)
-	} else {
-		r.Use(slogchi.New(logger))
-	}
+	r.Use(slogchi.New(logger))
 	r.Get("/ready", readyHandler(workerPool))
 
-	httpServer := http.Server{
-		Addr:    net.JoinHostPort(cfg.HttpServer.Host, cfg.HttpServer.Port),
+	addr := ":" + cfg.HTTPServer.Port
+	httpServer := &http.Server{
+		//Addr:    net.JoinHostPort(cfg.HTTPServer.Host, cfg.HTTPServer.Port),
+		Addr:    addr,
 		Handler: r,
 	}
 
 	return &Http{
 		cfg:        cfg,
 		logger:     logger,
-		httpServer: &httpServer,
+		httpServer: httpServer,
 		workerPool: workerPool,
+		ErrChan:    make(chan error),
 	}
 }
 
 func (srv *Http) Start() {
 	go func() {
-		srv.ErrChan <- srv.httpServer.ListenAndServe()
+		log.Fatal(srv.httpServer.ListenAndServe())
 	}()
-	srv.logger.Info("http server started", slog.String("addr", srv.httpServer.Addr))
+	srv.logger.Info("http server starting...", slog.String("addr", srv.httpServer.Addr))
 }
 
 func (srv *Http) Shutdown(ctx context.Context) error {
@@ -65,7 +65,7 @@ func readyHandler(workerPool *worker.Pool) http.HandlerFunc {
 		if synced {
 			w.WriteHeader(http.StatusOK)
 		} else {
-			w.WriteHeader(http.StatusExpectationFailed)
+			w.WriteHeader(http.StatusForbidden)
 		}
 	}
 }

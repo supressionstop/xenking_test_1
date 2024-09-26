@@ -1,14 +1,16 @@
 package logger
 
 import (
-	"github.com/supressionstop/xenking_test_1/internal/config"
 	"log"
 	"log/slog"
 	"os"
+
+	"github.com/supressionstop/xenking_test_1/internal/config"
 )
 
 func MustSetup(cfg config.Config) *slog.Logger {
 	var handler slog.Handler
+
 	level, err := parseLevel(cfg.Log.Level)
 	if err != nil {
 		log.Fatal(err)
@@ -28,6 +30,7 @@ func MustSetup(cfg config.Config) *slog.Logger {
 
 func parseLevel(s string) (slog.Level, error) {
 	var level slog.Level
-	var err = level.UnmarshalText([]byte(s))
+	err := level.UnmarshalText([]byte(s))
+
 	return level, err
 }
