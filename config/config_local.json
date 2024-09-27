@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "processor",
+    "environment": "dev"
+  },
+  "log": {
+    "level": "debug"
+  },
+  "db": {
+    "url": "postgres://kiddy:kiddy_pwd@localhost:55432/kiddy_db?&application_name=softpro&sslmode=disable",
+    "migrations_url": "file:///migrations"
+  },
+  "workers": [
+    {
+      "sport": "baseball",
+      "poll_interval": "5s"
+    }
+  ],
+  "provider": {
+    "base_url": "http://localhost:47001/api",
+    "http_timeout": "1s"
+  },
+  "http_server": {
+    "host": "127.0.0.1",
+    "port": "8089"
+  },
+  "grpc_server": {
+    "host": "127.0.0.1",
+    "port": "8080"
+  }
+}

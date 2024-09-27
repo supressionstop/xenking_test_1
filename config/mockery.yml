@@ -1,0 +1,5 @@
+dir: ./internal/usecase
+output: ./test/mock
+all: true
+case: underscore
+with-expecter: true
