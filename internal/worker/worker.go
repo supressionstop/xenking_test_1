@@ -55,6 +55,7 @@ func (w *Worker) Start(ctx context.Context) {
 				err := w.fetchLine.Execute(ctx, w.sport)
 				if err != nil {
 					w.ErrCh <- err
+					continue
 				} // TODO: handle errors
 
 				w.setSynced()

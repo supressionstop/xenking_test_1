@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"log"
 	"log/slog"
 
 	"github.com/supressionstop/xenking_test_1/internal/config"
@@ -15,6 +14,7 @@ type Pool struct {
 	FirstSyncChan  chan struct{}
 	workerSyncChan chan struct{}
 	workersErrChan chan error
+	ErrChan        chan error
 }
 
 func NewPool(cfg config.Config, logger *slog.Logger, fetchLine usecase.FetchLine) *Pool {
@@ -24,6 +24,7 @@ func NewPool(cfg config.Config, logger *slog.Logger, fetchLine usecase.FetchLine
 		FirstSyncChan:  make(chan struct{}),
 		workerSyncChan: make(chan struct{}, len(cfg.Workers)),
 		workersErrChan: make(chan error, len(cfg.Workers)),
+		ErrChan:        make(chan error),
 	}
 
 	for idx, wc := range cfg.Workers {
@@ -69,7 +70,6 @@ func (p *Pool) waitSynchronization(ctx context.Context) {
 				}
 			case err := <-p.workersErrChan:
 				p.logger.Error("worker err:", slog.Any("err", err))
-				log.Fatal(err)
 			case <-ctx.Done():
 				return
 			}

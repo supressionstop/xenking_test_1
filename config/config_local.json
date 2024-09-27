@@ -14,14 +14,6 @@
     {
       "sport": "baseball",
       "poll_interval": "5s"
-    },
-    {
-      "sport": "football",
-      "poll_interval": "5s"
-    },
-    {
-      "sport": "soccer",
-      "poll_interval": "5s"
     }
   ],
   "provider": {

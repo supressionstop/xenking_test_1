@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/supressionstop/xenking_test_1/internal/config"
+	internalLogger "github.com/supressionstop/xenking_test_1/internal/logger"
 	"github.com/supressionstop/xenking_test_1/internal/provider"
 	"github.com/supressionstop/xenking_test_1/internal/server"
+	"github.com/supressionstop/xenking_test_1/internal/storage"
 	"github.com/supressionstop/xenking_test_1/internal/usecase"
 	"github.com/supressionstop/xenking_test_1/internal/usecase/repository"
 	"github.com/supressionstop/xenking_test_1/internal/worker"
@@ -14,10 +17,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/supressionstop/xenking_test_1/internal/config"
-	internalLogger "github.com/supressionstop/xenking_test_1/internal/logger"
-	"github.com/supressionstop/xenking_test_1/internal/storage"
 )
 
 func main() {
@@ -31,7 +30,7 @@ func run(ctx context.Context) error {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := config.MustSetup(os.Getenv("APP_ENVIRONMENT"))
+	cfg, err := config.MustSetup(os.Getenv("APP_ENV"))
 	if err != nil {
 		return fmt.Errorf("failed to setup config: %w", err)
 	}
@@ -88,7 +87,7 @@ func run(ctx context.Context) error {
 		subscriptionManager,
 	)
 
-	err = grpcServer.DeferredStart(workerPool.FirstSyncChan)
+	err = grpcServer.DeferredStart(ctx, cfg.MaxWorkerInterval(), workerPool.FirstSyncChan)
 	if err != nil {
 		return fmt.Errorf("failed to start gRPC server: %w", err)
 	}

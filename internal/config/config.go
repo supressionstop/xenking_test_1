@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -82,12 +83,73 @@ func MustSetup(environment string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg := &Config{} //nolint:exhaustruct
+	cfg := &Config{}
 
 	err = viper.Unmarshal(cfg)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := cfg.setupWorkersFromEnvs(); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
+}
+
+func (cfg *Config) MaxWorkerInterval() time.Duration {
+	var interval time.Duration
+	for _, w := range cfg.Workers {
+		if w.PollInterval > interval {
+			interval = w.PollInterval
+		}
+	}
+
+	return interval
+}
+
+func (cfg *Config) setupWorkersFromEnvs() error {
+	const prefix = "WORKERS_"
+	var workerEnvs []string
+	envs := os.Environ()
+	for _, env := range envs {
+		if strings.HasPrefix(env, prefix) {
+			workerEnvs = append(workerEnvs, env)
+		}
+	}
+
+	if len(workerEnvs) == 0 {
+		return nil
+	}
+
+	workersCfg := make([]Worker, len(workerEnvs)/2)
+	for _, env := range workerEnvs {
+		pair := strings.SplitN(env, "=", 2)
+		name := pair[0]
+		value := pair[1]
+
+		nameParts := strings.Split(name, "_")
+		if len(nameParts) < 2 {
+			return fmt.Errorf("cant parse worker idx: %s", name)
+		}
+		idx, err := strconv.Atoi(nameParts[1])
+		if err != nil {
+			return fmt.Errorf("cant parse worker idx: %s", name)
+		}
+
+		if len(nameParts) == 3 && nameParts[2] == "SPORT" {
+			workersCfg[idx].Sport = value
+		}
+		if len(nameParts) == 4 && nameParts[2] == "POLL" && nameParts[3] == "INTERVAL" {
+			pollInterval, err := time.ParseDuration(value)
+			if err != nil {
+				return fmt.Errorf("failed to parse worker poll interval: %q", value)
+			}
+			workersCfg[idx].PollInterval = pollInterval
+		}
+	}
+
+	cfg.Workers = workersCfg
+
+	return nil
 }

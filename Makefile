@@ -30,3 +30,6 @@ mock:
 .PHONY: debug-run
 debug-run:
 	docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build
+
+grpc-client:
+	go build -o tools/grpc_client github.com/supressionstop/xenking_test_1/cmd/grpc_client

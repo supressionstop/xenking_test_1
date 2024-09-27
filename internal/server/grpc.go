@@ -1,10 +1,13 @@
 package server
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net"
+	"time"
 
 	"github.com/supressionstop/xenking_test_1/internal/server/pb"
 	"google.golang.org/grpc"
@@ -53,10 +56,22 @@ func (srv *Grpc) Start() error {
 	return nil
 }
 
-func (srv *Grpc) DeferredStart(toStart chan struct{}) error {
-	srv.logger.Info("grpc server is waiting to start", slog.String("addr", srv.addr))
-	<-toStart
-	return srv.Start()
+func (srv *Grpc) DeferredStart(ctx context.Context, timeLimit time.Duration, toStart chan struct{}) error {
+	timeLimit += 1 * time.Second
+	srv.logger.Info(
+		"grpc server is waiting to start",
+		slog.String("addr", srv.addr),
+		slog.String("time_limit", timeLimit.String()),
+	)
+	timeoutCtx, cancelTimeout := context.WithTimeout(ctx, timeLimit)
+	select {
+	case <-toStart:
+		cancelTimeout()
+		return srv.Start()
+	case <-timeoutCtx.Done():
+		cancelTimeout()
+		return fmt.Errorf("grpc server timed out to start %s", timeLimit.String())
+	}
 }
 
 func (srv *Grpc) GracefulStop() {

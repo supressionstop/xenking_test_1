@@ -57,6 +57,17 @@ func main() {
 	}()
 
 	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println(`
+=== gRPC client
+Sends requests to gRPC server to subscribe for sports updates.
+=== How to use
+Print sports separated by commas, then space, then integer value to set updating interval in seconds.
+=== Examples:
+baseball 1			# subscribe to baseball, server will send back updates each 1 second
+football,soccer 3		# subscribe to football and soccer, server will send back updates each 1 second
+soccer,baseball,football 2	# soccer,baseball and football updates each 2 seconds
+===`)
 	fmt.Println("Simple Shell")
 	fmt.Println("---------------------")
 	for {
