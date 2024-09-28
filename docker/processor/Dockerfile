@@ -9,4 +9,4 @@ FROM alpine
 WORKDIR /app
 COPY config config
 COPY --from=builder /app/processor ./processor
-CMD ./processor
+ENTRYPOINT ./processor

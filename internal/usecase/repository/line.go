@@ -7,16 +7,16 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/supressionstop/xenking_test_1/internal/entity"
-	"github.com/supressionstop/xenking_test_1/internal/storage"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/enum"
+
+	storage2 "github.com/supressionstop/xenking_test_1/internal/infrastructure/storage"
+	"github.com/supressionstop/xenking_test_1/internal/usecase/entity"
 )
 
 type Line struct {
-	pg *storage.Postgres
+	pg *storage2.Postgres
 }
 
-func NewLine(pg *storage.Postgres) *Line {
+func NewLine(pg *storage2.Postgres) *Line {
 	return &Line{pg: pg}
 }
 
@@ -51,7 +51,7 @@ func (repo *Line) Save(ctx context.Context, line entity.Line) (entity.Line, erro
 	return result, nil
 }
 
-func (repo *Line) GetRecentLines(ctx context.Context, sports []enum.Sport) ([]entity.Line, error) {
+func (repo *Line) GetRecentLines(ctx context.Context, sports []entity.Sport) ([]entity.Line, error) {
 	tx, err := repo.pg.Pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("line.save begin tx: %w", err)
@@ -60,7 +60,7 @@ func (repo *Line) GetRecentLines(ctx context.Context, sports []enum.Sport) ([]en
 		err = repo.finishTransaction(ctx, err, tx)
 	}()
 
-	lines, err := repo.getRecentLines(ctx, sports)
+	lines, err := repo.grabRecentLines(ctx, sports)
 	if err != nil {
 		return nil, fmt.Errorf("getting recent lines: %w", err)
 	}
@@ -108,24 +108,24 @@ func (repo *Line) saveLine(ctx context.Context, line entity.Line) (savedLine, er
 		return sl, fmt.Errorf("string to numeric: %w", err)
 	}
 
-	if line.Name == enum.Baseball {
-		s, err := repo.pg.Queries.SaveBaseball(ctx, storage.SaveBaseballParams{
+	if line.Name == entity.Baseball {
+		s, err := repo.pg.Queries.SaveBaseball(ctx, storage2.SaveBaseballParams{
 			Sport:     line.Name,
 			Rate:      rate,
 			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		})
 		sl = savedLine(s)
 		errReturn = err
-	} else if line.Name == enum.Football {
-		s, err := repo.pg.Queries.SaveFootball(ctx, storage.SaveFootballParams{
+	} else if line.Name == entity.Football {
+		s, err := repo.pg.Queries.SaveFootball(ctx, storage2.SaveFootballParams{
 			Sport:     line.Name,
 			Rate:      rate,
 			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		})
 		sl = savedLine(s)
 		errReturn = err
-	} else if line.Name == enum.Soccer {
-		s, err := repo.pg.Queries.SaveSoccer(ctx, storage.SaveSoccerParams{
+	} else if line.Name == entity.Soccer {
+		s, err := repo.pg.Queries.SaveSoccer(ctx, storage2.SaveSoccerParams{
 			Sport:     line.Name,
 			Rate:      rate,
 			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
@@ -154,21 +154,21 @@ func (repo *Line) savedLineToEntity(sl savedLine) (entity.Line, error) {
 	return result, nil
 }
 
-func (repo *Line) getRecentLines(ctx context.Context, sports []enum.Sport) ([]savedLine, error) {
+func (repo *Line) grabRecentLines(ctx context.Context, sports []entity.Sport) ([]savedLine, error) {
 	var errReturn error
 
 	result := make([]savedLine, len(sports))
 
 	for idx, sport := range sports {
-		if sport == enum.Baseball {
+		if sport == entity.Baseball {
 			s, err := repo.pg.Queries.GetRecentBaseball(ctx)
 			result[idx] = savedLine(s)
 			errReturn = err
-		} else if sport == enum.Football {
+		} else if sport == entity.Football {
 			s, err := repo.pg.Queries.GetRecentFootball(ctx)
 			result[idx] = savedLine(s)
 			errReturn = err
-		} else if sport == enum.Soccer {
+		} else if sport == entity.Soccer {
 			s, err := repo.pg.Queries.GetRecentSoccer(ctx)
 			result[idx] = savedLine(s)
 			errReturn = err

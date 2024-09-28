@@ -68,10 +68,4 @@ Use screaming snake case as env names. E.g.:
 ```text
 APP_NAME=foo
 DB_URL=sqlite://...
-WORKERS_0_SPORT=soccer
-WORKERS_0_POLL_INTERVAL=10
-WORKERS_1_SPORT=soccer
-WORKERS_1_POLL_INTERVAL=10
-WORKERS_2_SPORT=soccer
-WORKERS_2_POLL_INTERVAL=10
 ```

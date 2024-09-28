@@ -2,26 +2,26 @@ package usecase
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/supressionstop/xenking_test_1/internal/entity"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/enum"
-	mocks "github.com/supressionstop/xenking_test_1/test/mock"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/supressionstop/xenking_test_1/internal/usecase/entity"
+	mocks "github.com/supressionstop/xenking_test_1/test/mock"
 )
 
 func TestGetLineSuccess(t *testing.T) {
 	// arrange
 	ctx := context.Background()
-	sport := enum.Baseball
-	providerLine := dto.ProviderLine{
-		Sport: enum.Baseball,
-		Rate:  "1.2345",
+	sport := entity.Baseball
+	providerLine := entity.Line{
+		Name:        entity.Baseball,
+		Coefficient: "1.2345",
 	}
 	want := entity.Line{
 		ID:          0,
-		Name:        enum.Baseball,
+		Name:        entity.Baseball,
 		Coefficient: "1.2345",
 		SavedAt:     time.Time{},
 	}

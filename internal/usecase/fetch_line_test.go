@@ -2,25 +2,26 @@ package usecase
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/supressionstop/xenking_test_1/internal/entity"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/enum"
-	mocks "github.com/supressionstop/xenking_test_1/test/mock"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/supressionstop/xenking_test_1/internal/usecase/entity"
+	mocks "github.com/supressionstop/xenking_test_1/test/mock"
 )
 
 func TestFetchLineUseCaseSuccess(t *testing.T) {
 	// arrange
 	ctx := context.Background()
-	sport := enum.Baseball
+	sport := entity.Baseball
 	line := entity.Line{
-		Name:        enum.Baseball,
+		Name:        entity.Baseball,
 		Coefficient: "1.5",
 	}
 	lineSaved := entity.Line{
 		ID:          1,
-		Name:        enum.Baseball,
+		Name:        entity.Baseball,
 		Coefficient: "1.5",
 		SavedAt:     time.Now(),
 	}

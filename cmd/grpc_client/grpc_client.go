@@ -6,20 +6,23 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/supressionstop/xenking_test_1/internal/server/pb"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/supressionstop/xenking_test_1/internal/infrastructure/server/pb"
 )
 
 func main() {
 	host := flag.String("host", "localhost", "gRPC server host")
 	port := flag.String("port", "48002", "gRPC server port")
 
+	// client conn
 	conn, err := grpc.NewClient(
 		*host+":"+*port,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -42,9 +45,9 @@ func main() {
 		}
 	}(stream)
 
+	// listen for server responses
 	go func() {
 		for {
-			// (google.golang.org/grpc/BidiStreamingClient.Recv
 			in, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
 				return
@@ -96,6 +99,7 @@ soccer,baseball,football 2	# soccer,baseball and football updates each 2 seconds
 	}
 }
 
+// parseInput to gRPC struct from input string.
 func parseInput(s string) (*pb.Subscribe, error) {
 	split := strings.Split(s, " ")
 	if len(split) != 2 {

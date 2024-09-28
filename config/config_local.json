@@ -13,11 +13,11 @@
   "workers": [
     {
       "sport": "baseball",
-      "poll_interval": "5s"
+      "poll_interval": "1s"
     }
   ],
   "provider": {
-    "base_url": "http://localhost:47001/api",
+    "base_url": "http://localhost:48000/api",
     "http_timeout": "1s"
   },
   "http_server": {

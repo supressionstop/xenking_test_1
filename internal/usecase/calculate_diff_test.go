@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/supressionstop/xenking_test_1/internal/entity"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/supressionstop/xenking_test_1/internal/usecase/entity"
 )
 
 func TestCalculateDiffUseCase(t *testing.T) {
@@ -12,27 +13,27 @@ func TestCalculateDiffUseCase(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		prev    dto.LineMap
-		curr    dto.LineMap
-		got     dto.LinesDiff
+		prev    entity.LineMap
+		curr    entity.LineMap
+		got     entity.LinesDiff
 		gotErr  error
-		want    dto.LinesDiff
+		want    entity.LinesDiff
 		wantErr error
 	}{
 		{
 			name: "first single",
 			prev: nil,
-			curr: dto.LineMap{"soccer": entity.Line{
+			curr: entity.LineMap{"soccer": entity.Line{
 				Name:        "soccer",
 				Coefficient: "1.5",
 			}},
-			want:    dto.LinesDiff{"soccer": "1.5"},
+			want:    entity.LinesDiff{"soccer": "1.5"},
 			wantErr: nil,
 		},
 		{
 			name: "first multiple",
 			prev: nil,
-			curr: dto.LineMap{
+			curr: entity.LineMap{
 				"soccer": entity.Line{
 					Name:        "soccer",
 					Coefficient: "1.5",
@@ -42,33 +43,33 @@ func TestCalculateDiffUseCase(t *testing.T) {
 					Coefficient: "0.555",
 				},
 			},
-			want:    dto.LinesDiff{"soccer": "1.5", "football": "0.555"},
+			want:    entity.LinesDiff{"soccer": "1.5", "football": "0.555"},
 			wantErr: nil,
 		},
 		{
 			name:    "diff single lesser",
-			prev:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
-			curr:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.2"}},
-			want:    dto.LinesDiff{"soccer": "-0.3"},
+			prev:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
+			curr:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.2"}},
+			want:    entity.LinesDiff{"soccer": "-0.3"},
 			wantErr: nil,
 		},
 		{
 			name:    "diff single equal",
-			prev:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
-			curr:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
-			want:    dto.LinesDiff{"soccer": "0"},
+			prev:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
+			curr:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
+			want:    entity.LinesDiff{"soccer": "0"},
 			wantErr: nil,
 		},
 		{
 			name:    "diff single greater",
-			prev:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
-			curr:    dto.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "2.5"}},
-			want:    dto.LinesDiff{"soccer": "1"},
+			prev:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "1.5"}},
+			curr:    entity.LineMap{"soccer": entity.Line{Name: "soccer", Coefficient: "2.5"}},
+			want:    entity.LinesDiff{"soccer": "1"},
 			wantErr: nil,
 		},
 		{
 			name: "diff multiple",
-			prev: dto.LineMap{
+			prev: entity.LineMap{
 				"soccer": entity.Line{
 					Name:        "soccer",
 					Coefficient: "2.3",
@@ -78,7 +79,7 @@ func TestCalculateDiffUseCase(t *testing.T) {
 					Coefficient: "1.777",
 				},
 			},
-			curr: dto.LineMap{
+			curr: entity.LineMap{
 				"soccer": entity.Line{
 					Name:        "soccer",
 					Coefficient: "1.5",
@@ -88,7 +89,7 @@ func TestCalculateDiffUseCase(t *testing.T) {
 					Coefficient: "2.555",
 				},
 			},
-			want:    dto.LinesDiff{"soccer": "-0.8", "football": "0.778"},
+			want:    entity.LinesDiff{"soccer": "-0.8", "football": "0.778"},
 			wantErr: nil,
 		},
 	}

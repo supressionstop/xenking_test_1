@@ -2,16 +2,22 @@ package usecase
 
 import (
 	"github.com/shopspring/decimal"
-	"github.com/supressionstop/xenking_test_1/internal/usecase/dto"
+
+	"github.com/supressionstop/xenking_test_1/internal/usecase/entity"
 )
 
-type CalculateDiffUseCase struct{}
-
-func NewCalculateDiffUseCase() *CalculateDiffUseCase {
-	return &CalculateDiffUseCase{}
+// CalculateDiffer between two collection of lines.
+type CalculateDiffer interface {
+	Execute(prev, curr entity.LineMap) (entity.LinesDiff, error)
 }
 
-func (uc *CalculateDiffUseCase) Execute(prev, curr dto.LineMap) (dto.LinesDiff, error) {
+type CalculateDiff struct{}
+
+func NewCalculateDiffUseCase() *CalculateDiff {
+	return &CalculateDiff{}
+}
+
+func (uc *CalculateDiff) Execute(prev, curr entity.LineMap) (entity.LinesDiff, error) {
 	noPrev := len(prev) == 0
 	if noPrev {
 		return uc.firstResponse(curr)
@@ -20,16 +26,16 @@ func (uc *CalculateDiffUseCase) Execute(prev, curr dto.LineMap) (dto.LinesDiff, 
 	return uc.diff(prev, curr)
 }
 
-func (uc *CalculateDiffUseCase) firstResponse(curr dto.LineMap) (dto.LinesDiff, error) {
-	firstResponse := make(dto.LinesDiff, len(curr))
+func (uc *CalculateDiff) firstResponse(curr entity.LineMap) (entity.LinesDiff, error) {
+	firstResponse := make(entity.LinesDiff, len(curr))
 	for sport, line := range curr {
 		firstResponse[sport] = line.Coefficient
 	}
 	return firstResponse, nil
 }
 
-func (uc *CalculateDiffUseCase) diff(prev, curr dto.LineMap) (dto.LinesDiff, error) {
-	diff := make(dto.LinesDiff, len(curr))
+func (uc *CalculateDiff) diff(prev, curr entity.LineMap) (entity.LinesDiff, error) {
+	diff := make(entity.LinesDiff, len(curr))
 	for sport, line := range prev {
 		prevRate, err := decimal.NewFromString(line.Coefficient)
 		if err != nil {
